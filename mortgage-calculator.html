@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mortgage Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for visualization -->
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -72,6 +73,15 @@
     a.home-link:hover {
       text-decoration: underline;
     }
+    #pieChartContainer {
+      width: 100%;
+      margin-top: 20px;
+      text-align: center;
+    }
+    canvas {
+      max-width: 400px;
+      margin: auto;
+    }
   </style>
 </head>
 <body>
@@ -100,6 +110,9 @@
       <option value="la">Los Angeles, CA (0.73%)</option>
       <option value="houston">Houston, TX (2.01%)</option>
       <option value="miami">Miami, FL (0.98%)</option>
+      <option value="chicago">Chicago, IL (2.03%)</option>
+      <option value="seattle">Seattle, WA (0.93%)</option>
+      <option value="sf">San Francisco, CA (1.17%)</option>
     </select>
 
     <button onclick="calculate()">Calculate</button>
@@ -109,13 +122,20 @@
     <a class="home-link" href="index.html">← Back to Homepage</a>
   </div>
 
+  <div id="pieChartContainer">
+    <canvas id="paymentChart"></canvas>
+  </div>
+
   <script>
     const cityTaxes = {
       dc: 0.0085,
       nyc: 0.0168,
       la: 0.0073,
       houston: 0.0201,
-      miami: 0.0098
+      miami: 0.0098,
+      chicago: 0.0203,
+      seattle: 0.0093,
+      sf: 0.0117
     };
 
     function calculate() {
@@ -142,6 +162,9 @@
       let balance = loanAmount;
       let totalPrincipal = 0;
       let totalInterest = 0;
+      let principalPaid = 0;
+      let interestPaid = 0;
+      let taxPaid = 0;
 
       for (let i = 1; i <= 72; i++) {
         const interest = balance * monthlyRate;
@@ -160,6 +183,36 @@
           </tr>
         `;
       }
+
+      const chartData = {
+        labels: ['Principal', 'Interest', 'Property Tax'],
+        datasets: [{
+          data: [totalPrincipal, totalInterest, monthlyTax * 72],
+          backgroundColor: ['#00bfff', '#ff6347', '#32cd32'],
+          hoverBackgroundColor: ['#0099cc', '#ff4500', '#228b22']
+        }]
+      };
+
+      const ctx = document.getElementById('paymentChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: chartData,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return `${tooltipItem.label}: $${tooltipItem.raw.toFixed(2)}`;
+                }
+              }
+            }
+          }
+        }
+      });
 
       document.getElementById('results').innerHTML = `
         <h3>Monthly Payment: $${totalMonthly.toFixed(2)}</h3>
