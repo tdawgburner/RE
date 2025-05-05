@@ -3,192 +3,187 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mortgage Calculator</title>
+  <title>Mortgage Calculator - DreamKey Realty</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #eee;
+      background-color: #121212;
+      color: #fff;
       margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1f1f1f;
       padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
     }
     .container {
+      padding: 20px;
       max-width: 800px;
       margin: auto;
-      background: #222;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-    h1 {
-      text-align: center;
-      color: #00aaff;
-    }
-    label, select, input {
-      display: block;
-      margin: 15px 0;
-      width: 100%;
-      font-size: 16px;
     }
     input, select {
+      width: 100%;
       padding: 10px;
+      margin: 10px 0;
       border-radius: 5px;
-      border: 1px solid #444;
-      background: #333;
-      color: #fff;
+      border: none;
+      font-size: 1em;
     }
     button {
       background-color: #00aaff;
       color: white;
-      padding: 12px 20px;
+      padding: 10px 15px;
       border: none;
-      border-radius: 5px;
       cursor: pointer;
+      border-radius: 5px;
       margin-top: 10px;
     }
-    .result {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-    a {
-      color: #00aaff;
-      text-decoration: none;
-      display: block;
-      text-align: center;
-      margin-top: 30px;
-    }
     table {
-      margin-top: 30px;
       width: 100%;
       border-collapse: collapse;
+      margin-top: 20px;
     }
     th, td {
+      border: 1px solid #444;
       padding: 10px;
-      border: 1px solid #555;
-      text-align: right;
+      text-align: center;
     }
     th {
-      background: #00aaff;
-      color: #fff;
+      background-color: #1f1f1f;
+    }
+    a.back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #00aaff;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>Mortgage Calculator</h1>
-    <label>Home Price ($):</label>
-    <input type="number" id="price" />
+  </header>
 
-    <label>Down Payment ($):</label>
-    <input type="number" id="down" />
+  <div class="container">
+    <label>Home Price ($)</label>
+    <input type="number" id="price" value="600000">
 
-    <label>Loan Term (years):</label>
-    <input type="number" id="term" value="30" />
+    <label>Down Payment ($)</label>
+    <input type="number" id="downPayment" value="120000">
 
-    <label>Interest Rate (%):</label>
-    <input type="number" id="rate" value="6.5" />
+    <label>Loan Term (Years)</label>
+    <input type="number" id="term" value="30">
 
-    <label>Location (optional):</label>
-    <select id="location">
-      <option value="">-- Select City --</option>
-      <option value="dc">Washington, DC</option>
-      <option value="nyc">New York, NY</option>
-      <option value="la">Los Angeles, CA</option>
-      <option value="atl">Atlanta, GA</option>
-      <option value="chi">Chicago, IL</option>
+    <label>Interest Rate (%)</label>
+    <input type="number" step="0.01" id="rate" value="6.5">
+
+    <label>Extra Monthly Payment ($)</label>
+    <input type="number" id="extra" value="0">
+
+    <label>Select City (optional)</label>
+    <select id="city">
+      <option value="">--None--</option>
+      <option value="DC">Washington, DC</option>
+      <option value="NYC">New York, NY</option>
+      <option value="SF">San Francisco, CA</option>
+      <option value="ATX">Austin, TX</option>
+      <option value="CHI">Chicago, IL</option>
+      <option value="MIA">Miami, FL</option>
+      <option value="SEA">Seattle, WA</option>
+      <option value="DEN">Denver, CO</option>
+      <option value="BOS">Boston, MA</option>
     </select>
 
-    <button onclick="calculateMortgage()">Calculate</button>
-    <div class="result" id="resultText"></div>
-    <table id="amortizationTable"></table>
+    <button onclick="calculate()">Calculate</button>
+    <canvas id="chart" height="100"></canvas>
+    <table id="results"></table>
+    <a class="back-link" href="index.html">&larr; Back to Home</a>
   </div>
-
-  <a href="index.html">← Back to Homepage</a>
 
   <script>
     const taxRates = {
-      dc: 0.0085,
-      nyc: 0.012,
-      la: 0.0075,
-      atl: 0.011,
-      chi: 0.0102
+      DC: 0.0085,
+      NYC: 0.0105,
+      SF: 0.012,
+      ATX: 0.0181,
+      CHI: 0.0225,
+      MIA: 0.012,
+      SEA: 0.011,
+      DEN: 0.007,
+      BOS: 0.0108
     };
 
-    function calculateMortgage() {
-      const price = parseFloat(document.getElementById("price").value);
-      const down = parseFloat(document.getElementById("down").value);
-      const term = parseFloat(document.getElementById("term").value);
-      const rate = parseFloat(document.getElementById("rate").value);
-      const location = document.getElementById("location").value;
+    function calculate() {
+      const price = parseFloat(document.getElementById('price').value);
+      const downPayment = parseFloat(document.getElementById('downPayment').value);
+      const loanAmount = price - downPayment;
+      const years = parseInt(document.getElementById('term').value);
+      const interest = parseFloat(document.getElementById('rate').value) / 100 / 12;
+      const months = years * 12;
+      const extra = parseFloat(document.getElementById('extra').value);
+      const city = document.getElementById('city').value;
+      const propertyTaxRate = taxRates[city] || 0;
 
-      if (!price || !down || !term || !rate) {
-        document.getElementById("resultText").innerText = "Please fill out all required fields.";
-        return;
-      }
+      const propertyTaxMonthly = (price * propertyTaxRate) / 12;
 
-      const loanAmount = price - down;
-      const monthlyRate = rate / 100 / 12;
-      const totalMonths = term * 12;
-      const monthlyPayment = loanAmount * monthlyRate / (1 - Math.pow(1 + monthlyRate, -totalMonths));
-      const taxMonthly = location && taxRates[location] ? (price * taxRates[location]) / 12 : 0;
-      const totalMonthly = monthlyPayment + taxMonthly;
+      const monthly = (loanAmount * interest) / (1 - Math.pow(1 + interest, -months));
+      let balance = loanAmount;
+      let table = `<tr><th>Month</th><th>Principal</th><th>Interest</th><th>Property Tax</th><th>Balance</th></tr>`;
 
-      document.getElementById("resultText").innerHTML = `
-        Loan Amount: $${loanAmount.toFixed(2)}<br>
-        Estimated Monthly Payment: $${totalMonthly.toFixed(2)} (${monthlyPayment.toFixed(2)} + ${taxMonthly.toFixed(2)} property tax)`;
-
-      generateAmortizationTable(loanAmount, monthlyRate, monthlyPayment, taxMonthly);
-    }
-
-    function generateAmortizationTable(principal, monthlyRate, monthlyPayment, taxMonthly) {
-      const table = document.getElementById("amortizationTable");
-      table.innerHTML = "";
-
-      const header = `
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th>Principal</th>
-            <th>Interest</th>
-            <th>Property Tax</th>
-          </tr>
-        </thead>
-      `;
-      table.innerHTML = header;
-
-      let balance = principal;
       let totalPrincipal = 0;
-      let totalInterest = 0;
-      let body = "<tbody>";
+      let interestData = [], principalData = [];
 
       for (let i = 1; i <= 72; i++) {
-        const interest = balance * monthlyRate;
-        const principalPaid = monthlyPayment - interest;
-        balance -= principalPaid;
-        totalPrincipal += principalPaid;
-        totalInterest += interest;
+        const interestPayment = balance * interest;
+        const principalPayment = (monthly + extra) - interestPayment;
+        balance -= principalPayment;
+        totalPrincipal += principalPayment;
 
-        body += `
-          <tr>
-            <td>${i}</td>
-            <td>$${principalPaid.toFixed(2)}</td>
-            <td>$${interest.toFixed(2)}</td>
-            <td>$${taxMonthly.toFixed(2)}</td>
-          </tr>
-        `;
+        interestData.push(interestPayment);
+        principalData.push(principalPayment);
+
+        table += `<tr><td>${i}</td><td>$${principalPayment.toFixed(2)}</td><td>$${interestPayment.toFixed(2)}</td><td>$${propertyTaxMonthly.toFixed(2)}</td><td>$${balance.toFixed(2)}</td></tr>`;
       }
 
-      body += `
-        <tr>
-          <th colspan="1">Totals</th>
-          <td><strong>$${totalPrincipal.toFixed(2)}</strong></td>
-          <td><strong>$${totalInterest.toFixed(2)}</strong></td>
-          <td><strong>$${(taxMonthly * 72).toFixed(2)}</strong></td>
-        </tr>
-      `;
+      document.getElementById('results').innerHTML =
+        `<tr><th colspan="5">First 72 Months Summary</th></tr>
+         <tr><td colspan="5"><strong>Total Principal Paid:</strong> $${totalPrincipal.toFixed(2)}<br>
+         <strong>Monthly Property Tax:</strong> $${propertyTaxMonthly.toFixed(2)}</td></tr>`
+        + table;
 
-      body += "</tbody>";
-      table.innerHTML += body;
+      new Chart(document.getElementById("chart"), {
+        type: 'line',
+        data: {
+          labels: [...Array(72).keys()].map(i => i + 1),
+          datasets: [
+            {
+              label: 'Principal',
+              borderColor: '#00ff99',
+              backgroundColor: 'transparent',
+              data: principalData,
+            },
+            {
+              label: 'Interest',
+              borderColor: '#ff4d4d',
+              backgroundColor: 'transparent',
+              data: interestData,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#fff' } } },
+          scales: {
+            x: { ticks: { color: '#fff' } },
+            y: { ticks: { color: '#fff' } }
+          }
+        }
+      });
     }
   </script>
 </body>
