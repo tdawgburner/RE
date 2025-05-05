@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mortgage Calculator | DreamKey Realty</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Body Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f1f1f1;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    /* Header Styles */
+    header {
+      background-color: #1c1c1c;
+      padding: 40px 0;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 3em;
+    }
+
+    /* Mortgage Calculator Form */
+    .calculator-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .calculator-container h2 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1.2em;
+    }
+
+    .form-group button {
+      width: 100%;
+      padding: 15px;
+      background-color: #00aaff;
+      color: #fff;
+      font-size: 1.4em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .form-group button:hover {
+      background-color: #0088cc;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 1.6em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .result span {
+      color: #00aaff;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .calculator-container {
+        width: 100%;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Mortgage Calculator</h1>
+</header>
+
+<div class="calculator-container">
+  <h2>Calculate Your Monthly Payment</h2>
+
+  <div class="form-group">
+    <label for="loan-amount">Loan Amount</label>
+    <input type="number" id="loan-amount" placeholder="Enter loan amount" required>
+  </div>
+
+  <div class="form-group">
+    <label for="interest-rate">Annual Interest Rate (%)</label>
+    <input type="number" id="interest-rate" placeholder="Enter interest rate" step="0.1" required>
+  </div>
+
+  <div class="form-group">
+    <label for="loan-term">Loan Term (Years)</label>
+    <input type="number" id="loan-term" placeholder="Enter loan term" required>
+  </div>
+
+  <div class="form-group">
+    <button onclick="calculateMortgage()">Calculate</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// Mortgage Calculator Logic
+function calculateMortgage() {
+  const loanAmount = parseFloat(document.getElementById('loan-amount').value);
+  const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100 / 12; // Monthly interest rate
+  const loanTerm = parseInt(document.getElementById('loan-term').value) * 12; // Total payments (months)
+
+  if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(loanTerm)) {
+    alert("Please fill in all fields correctly.");
+    return;
+  }
+
+  // Mortgage calculation formula
+  const numerator = interestRate * Math.pow(1 + interestRate, loanTerm);
+  const denominator = Math.pow(1 + interestRate, loanTerm) - 1;
+  const monthlyPayment = loanAmount * numerator / denominator;
+
+  // Display result
+  const resultElement = document.getElementById('result');
+  resultElement.innerHTML = `Your Estimated Monthly Payment is: <span>$${monthlyPayment.toFixed(2)}</span>`;
+}
+</script>
+
+</body>
+</html>
