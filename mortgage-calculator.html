@@ -1,47 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DreamKey Realty - Mortgage Calculator</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
       font-family: 'Helvetica Neue', Arial, sans-serif;
       background-color: #f1f1f1;
       color: #333;
-      line-height: 1.6;
+      margin: 0;
+      padding: 0;
     }
 
     header {
       background-color: #1c1c1c;
       padding: 40px 0;
       text-align: center;
-      color: #fff;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      color: white;
     }
 
     header h1 {
-      font-size: 3em;
       margin-bottom: 10px;
+      font-size: 2.5em;
     }
 
-    header p {
-      font-size: 1.2em;
-    }
-
-    .calculator-container {
+    .container {
       max-width: 800px;
       margin: 40px auto;
-      padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      background: white;
+      padding: 30px;
       border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
     .input-group {
@@ -49,24 +39,18 @@
     }
 
     .input-group label {
-      font-size: 1.2em;
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
 
-    .input-group input {
+    .input-group input,
+    .input-group select {
       width: 100%;
-      padding: 10px;
-      font-size: 1.1em;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-
-    .result {
-      margin-top: 20px;
-      font-size: 1.5em;
-      color: #00aaff;
-      font-weight: bold;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
     }
 
     .button {
@@ -74,106 +58,133 @@
       padding: 12px 25px;
       background-color: #00aaff;
       color: #fff;
-      font-size: 1.2em;
-      border-radius: 8px;
+      font-size: 1.1em;
+      border-radius: 6px;
       text-decoration: none;
-      text-align: center;
-      transition: background-color 0.3s;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-right: 10px;
     }
 
     .button:hover {
       background-color: #0088cc;
     }
 
-    .button:active {
-      background-color: #0066aa;
+    .result {
+      margin-top: 25px;
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #00aaff;
     }
-
   </style>
 </head>
 <body>
 
 <header>
   <h1>DreamKey Realty</h1>
-  <p>Mortgage Calculator</p>
+  <p>Smart Mortgage Calculator</p>
 </header>
 
-<div class="calculator-container">
+<div class="container">
   <div class="input-group">
-    <label for="loanAmount">Loan Amount ($)</label>
-    <input type="number" id="loanAmount" placeholder="Enter loan amount" required>
-  </div>
-  
-  <div class="input-group">
-    <label for="interestRate">Interest Rate (%)</label>
-    <input type="number" id="interestRate" placeholder="Enter interest rate" required>
-  </div>
-  
-  <div class="input-group">
-    <label for="loanTerm">Loan Term (Years)</label>
-    <input type="number" id="loanTerm" placeholder="Enter loan term in years" required>
+    <label for="homePrice">Home Price ($)</label>
+    <input type="number" id="homePrice" placeholder="Enter total home price" />
   </div>
 
   <div class="input-group">
     <label for="downPayment">Down Payment ($)</label>
-    <input type="number" id="downPayment" placeholder="Enter down payment amount" required>
+    <input type="number" id="downPayment" placeholder="Enter down payment amount" />
   </div>
-  
+
   <div class="input-group">
-    <label for="location">Location (City, State)</label>
-    <input type="text" id="location" placeholder="Enter city/state (e.g., Washington, DC)">
+    <label for="loanAmount">Loan Amount ($)</label>
+    <input type="number" id="loanAmount" readonly style="background-color: #f9f9f9;" />
   </div>
 
-  <div class="result" id="monthlyPayment">Monthly Payment: $0.00</div>
+  <div class="input-group">
+    <label for="interestRate">Interest Rate (%)</label>
+    <input type="number" id="interestRate" placeholder="Enter annual interest rate" />
+  </div>
 
-  <a href="index.html" class="button">Back to Listings</a>
-  <button class="button" id="calculate">Calculate</button>
+  <div class="input-group">
+    <label for="loanTerm">Loan Term (Years)</label>
+    <input type="number" id="loanTerm" placeholder="Enter loan term (e.g. 30)" />
+  </div>
+
+  <div class="input-group">
+    <label for="city">Property Location (Optional)</label>
+    <select id="city">
+      <option value="">-- Select City (Optional) --</option>
+      <option value="Washington, DC">Washington, DC</option>
+      <option value="New York, NY">New York, NY</option>
+      <option value="Los Angeles, CA">Los Angeles, CA</option>
+      <option value="Chicago, IL">Chicago, IL</option>
+      <option value="Miami, FL">Miami, FL</option>
+      <option value="Austin, TX">Austin, TX</option>
+      <option value="Phoenix, AZ">Phoenix, AZ</option>
+      <option value="Atlanta, GA">Atlanta, GA</option>
+      <option value="Denver, CO">Denver, CO</option>
+      <option value="Seattle, WA">Seattle, WA</option>
+    </select>
+  </div>
+
+  <button class="button" onclick="calculateMortgage()">Calculate</button>
+  <a href="index.html" class="button">Back to Home</a>
+
+  <div class="result" id="resultText">Monthly Payment: $0.00</div>
 </div>
 
 <script>
-  // Property tax rates based on city/state (example rates for demonstration)
-  const propertyTaxRates = {
-    "Washington, DC": 0.85, // 0.85% of property value
-    "New York, NY": 1.68,   // 1.68% of property value
-    "Los Angeles, CA": 1.25, // 1.25% of property value
-    "Chicago, IL": 2.3,     // 2.3% of property value
-    // Add more cities and rates as needed
+  const taxRates = {
+    "Washington, DC": 0.85,
+    "New York, NY": 1.68,
+    "Los Angeles, CA": 1.25,
+    "Chicago, IL": 2.3,
+    "Miami, FL": 1.0,
+    "Austin, TX": 1.6,
+    "Phoenix, AZ": 0.72,
+    "Atlanta, GA": 0.95,
+    "Denver, CO": 0.57,
+    "Seattle, WA": 0.93
   };
 
-  document.getElementById('calculate').addEventListener('click', function() {
-    // Get input values
-    const loanAmount = parseFloat(document.getElementById('loanAmount').value);
-    const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
-    const loanTerm = parseInt(document.getElementById('loanTerm').value);
-    const downPayment = parseFloat(document.getElementById('downPayment').value);
-    const location = document.getElementById('location').value.trim();
+  function updateLoanAmount() {
+    const price = parseFloat(document.getElementById("homePrice").value) || 0;
+    const down = parseFloat(document.getElementById("downPayment").value) || 0;
+    const loan = Math.max(price - down, 0);
+    document.getElementById("loanAmount").value = loan.toFixed(2);
+  }
 
-    // Default property tax rate if location is not found
-    let propertyTaxRate = 1.0; // Default tax rate (1.0% if no match found)
+  document.getElementById("homePrice").addEventListener("input", updateLoanAmount);
+  document.getElementById("downPayment").addEventListener("input", updateLoanAmount);
 
-    // Check if location exists in propertyTaxRates
-    if (propertyTaxRates[location]) {
-      propertyTaxRate = propertyTaxRates[location];
-    } else if (location) {
-      alert("Property tax rate for the entered location not found. Using default rate.");
+  function calculateMortgage() {
+    const loanAmount = parseFloat(document.getElementById("loanAmount").value);
+    const interestRate = parseFloat(document.getElementById("interestRate").value) / 100;
+    const loanTerm = parseFloat(document.getElementById("loanTerm").value);
+    const selectedCity = document.getElementById("city").value;
+
+    if (!loanAmount || !interestRate || !loanTerm) {
+      alert("Please fill out home price, down payment, interest rate, and loan term.");
+      return;
     }
 
-    // Calculate loan details
-    const principal = loanAmount - downPayment;
     const monthlyInterest = interestRate / 12;
     const numberOfPayments = loanTerm * 12;
-    const monthlyPayment = (principal * monthlyInterest) / (1 - Math.pow(1 + monthlyInterest, -numberOfPayments));
+    const baseMonthly = (loanAmount * monthlyInterest) / (1 - Math.pow(1 + monthlyInterest, -numberOfPayments));
 
-    // Calculate property tax monthly cost (property value * tax rate / 12)
-    const estimatedPropertyTax = loanAmount * (propertyTaxRate / 100);
-    const monthlyTax = estimatedPropertyTax / 12;
+    let taxMonthly = 0;
+    if (selectedCity && taxRates[selectedCity]) {
+      const homePrice = parseFloat(document.getElementById("homePrice").value);
+      const annualTax = homePrice * (taxRates[selectedCity] / 100);
+      taxMonthly = annualTax / 12;
+    }
 
-    // Final monthly payment (including property tax)
-    const totalMonthlyPayment = monthlyPayment + monthlyTax;
+    const totalMonthly = baseMonthly + taxMonthly;
 
-    // Display result
-    document.getElementById('monthlyPayment').textContent = `Monthly Payment: $${totalMonthlyPayment.toFixed(2)} (including property tax)`;
-  });
+    document.getElementById("resultText").innerText = `Monthly Payment: $${totalMonthly.toFixed(2)} ${taxMonthly > 0 ? '(incl. est. property tax)' : ''}`;
+  }
 </script>
 
 </body>
