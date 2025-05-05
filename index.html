@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DreamKey Realty - Modern Listings</title>
+  <title>DreamKey Realty - Property Listings</title>
   <style>
-    /* Reset some default styles */
     * {
       margin: 0;
       padding: 0;
@@ -14,101 +13,111 @@
 
     /* Body Styles */
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #181818;  /* Dark background */
-      color: #f4f4f4;             /* Light text */
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f1f1f1; /* Light gray background */
+      color: #333;
       line-height: 1.6;
     }
 
-    /* Header Styles */
+    /* Header Styling */
     header {
-      background-color: #222; /* Dark header */
+      background-color: #1c1c1c; /* Dark background for header */
       padding: 40px 0;
       text-align: center;
       color: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     }
 
     header h1 {
-      font-size: 2.5em;
-      font-weight: 600;
+      font-size: 3em;
+      margin-bottom: 10px;
     }
 
     header p {
       font-size: 1.2em;
-      margin-top: 10px;
     }
 
-    /* Container for Listings */
-    .container {
+    /* Property Listing Container */
+    .property-container {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;
-      margin: 20px;
+      gap: 30px;
+      padding: 40px 20px;
     }
 
-    /* Property Card Styling */
+    /* Property Card Styles */
     .property-card {
-      background-color: #333;
-      border-radius: 15px;
-      overflow: hidden;
+      background-color: #fff;
+      border-radius: 12px;
       width: 300px;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     }
 
     .property-card:hover {
       transform: translateY(-10px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     }
 
     .property-card img {
       width: 100%;
-      height: 200px;
+      height: 180px;
       object-fit: cover;
-      border-bottom: 5px solid #007bff;
+      border-bottom: 5px solid #00aaff; /* Accent color */
+    }
+
+    .property-card .card-body {
+      padding: 20px;
+      text-align: center;
     }
 
     .property-card h3 {
-      margin: 15px;
-      font-size: 1.4em;
-      color: #fff;
+      font-size: 1.5em;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
     }
 
     .property-card p {
-      margin: 10px 15px;
-      font-size: 1.1em;
-      color: #ccc;
+      font-size: 1.2em;
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    .property-card .price {
+      font-size: 1.6em;
+      color: #00aaff;
+      font-weight: 700;
+      margin-bottom: 20px;
     }
 
     .property-card a {
-      display: block;
-      background-color: #007bff;
-      padding: 12px 0;
-      margin: 15px;
-      text-align: center;
-      font-size: 1.1em;
-      text-decoration: none;
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #00aaff;
       color: #fff;
+      text-decoration: none;
       border-radius: 5px;
+      font-weight: 600;
       transition: background-color 0.3s ease;
     }
 
     .property-card a:hover {
-      background-color: #0056b3;
+      background-color: #0088cc;
     }
 
     /* Responsive Design */
     @media (max-width: 768px) {
-      .container {
+      .property-container {
         flex-direction: column;
         align-items: center;
       }
 
       .property-card {
         width: 80%;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
       }
     }
   </style>
@@ -117,45 +126,45 @@
 
 <header>
   <h1>DreamKey Realty</h1>
-  <p>Your trusted source for real estate listings</p>
+  <p>Your Trusted Real Estate Marketplace</p>
 </header>
 
-<div class="container" id="property-list"></div>
+<div class="property-container" id="property-list"></div>
 
 <script>
 // Simulated API response for demonstration purposes
 const listings = [
   {
     id: 1,
-    title: "Beautiful Family Home in the Suburbs",
-    price: "$500,000",
-    image: "https://via.placeholder.com/300x200?text=Home+1",
+    title: "Stunning Oceanfront Villa",
+    price: "$1,500,000",
+    image: "https://via.placeholder.com/300x180?text=Oceanfront+Villa",
     url: "https://www.example.com/property1"
   },
   {
     id: 2,
-    title: "Modern Downtown Apartment",
+    title: "Contemporary Urban Loft",
     price: "$750,000",
-    image: "https://via.placeholder.com/300x200?text=Home+2",
+    image: "https://via.placeholder.com/300x180?text=Urban+Loft",
     url: "https://www.example.com/property2"
   },
   {
     id: 3,
-    title: "Spacious Beachfront Property",
-    price: "$1,200,000",
-    image: "https://via.placeholder.com/300x200?text=Home+3",
+    title: "Spacious Family Home with Pool",
+    price: "$950,000",
+    image: "https://via.placeholder.com/300x180?text=Family+Home",
     url: "https://www.example.com/property3"
   },
   {
     id: 4,
-    title: "Cozy Countryside Cottage",
-    price: "$350,000",
-    image: "https://via.placeholder.com/300x200?text=Home+4",
+    title: "Charming Historic Cottage",
+    price: "$475,000",
+    image: "https://via.placeholder.com/300x180?text=Historic+Cottage",
     url: "https://www.example.com/property4"
   }
 ];
 
-// Function to display the listings on the homepage
+// Function to display property listings
 function displayListings() {
   const container = document.getElementById('property-list');
 
@@ -165,16 +174,18 @@ function displayListings() {
     
     card.innerHTML = `
       <img src="${listing.image}" alt="${listing.title}">
-      <h3>${listing.title}</h3>
-      <p>${listing.price}</p>
-      <a href="${listing.url}" target="_blank">View Listing</a>
+      <div class="card-body">
+        <h3>${listing.title}</h3>
+        <p>${listing.price}</p>
+        <a href="${listing.url}" target="_blank">View Listing</a>
+      </div>
     `;
     
     container.appendChild(card);
   });
 }
 
-// Call the function to display the listings
+// Call function to display listings
 displayListings();
 </script>
 
