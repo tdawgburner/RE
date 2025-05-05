@@ -1,140 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DreamKey Realty - Mortgage Calculator</title>
-  <style>
-    body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background-color: #f1f1f1;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: #1c1c1c;
-      padding: 40px 0;
-      text-align: center;
-      color: white;
-    }
-
-    header h1 {
-      margin-bottom: 10px;
-      font-size: 2.5em;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .input-group {
-      margin-bottom: 20px;
-    }
-
-    .input-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .input-group input,
-    .input-group select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-
-    .button {
-      display: inline-block;
-      padding: 12px 25px;
-      background-color: #00aaff;
-      color: #fff;
-      font-size: 1.1em;
-      border-radius: 6px;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      margin-top: 10px;
-      margin-right: 10px;
-    }
-
-    .button:hover {
-      background-color: #0088cc;
-    }
-
-    .result {
-      margin-top: 25px;
-      font-size: 1.4em;
-      font-weight: bold;
-      color: #00aaff;
-    }
-  </style>
-</head>
-<body>
-
-<header>
-  <h1>DreamKey Realty</h1>
-  <p>Smart Mortgage Calculator</p>
-</header>
-
-<div class="container">
-  <div class="input-group">
-    <label for="homePrice">Home Price ($)</label>
-    <input type="number" id="homePrice" placeholder="Enter total home price" />
-  </div>
-
-  <div class="input-group">
-    <label for="downPayment">Down Payment ($)</label>
-    <input type="number" id="downPayment" placeholder="Enter down payment amount" />
-  </div>
-
-  <div class="input-group">
-    <label for="loanAmount">Loan Amount ($)</label>
-    <input type="number" id="loanAmount" readonly style="background-color: #f9f9f9;" />
-  </div>
-
-  <div class="input-group">
-    <label for="interestRate">Interest Rate (%)</label>
-    <input type="number" id="interestRate" placeholder="Enter annual interest rate" />
-  </div>
-
-  <div class="input-group">
-    <label for="loanTerm">Loan Term (Years)</label>
-    <input type="number" id="loanTerm" placeholder="Enter loan term (e.g. 30)" />
-  </div>
-
-  <div class="input-group">
-    <label for="city">Property Location (Optional)</label>
-    <select id="city">
-      <option value="">-- Select City (Optional) --</option>
-      <option value="Washington, DC">Washington, DC</option>
-      <option value="New York, NY">New York, NY</option>
-      <option value="Los Angeles, CA">Los Angeles, CA</option>
-      <option value="Chicago, IL">Chicago, IL</option>
-      <option value="Miami, FL">Miami, FL</option>
-      <option value="Austin, TX">Austin, TX</option>
-      <option value="Phoenix, AZ">Phoenix, AZ</option>
-      <option value="Atlanta, GA">Atlanta, GA</option>
-      <option value="Denver, CO">Denver, CO</option>
-      <option value="Seattle, WA">Seattle, WA</option>
-    </select>
-  </div>
-
-  <button class="button" onclick="calculateMortgage()">Calculate</button>
-  <a href="index.html" class="button">Back to Home</a>
-
-  <div class="result" id="resultText">Monthly Payment: $0.00</div>
-</div>
-
 <script>
   const taxRates = {
     "Washington, DC": 0.85,
@@ -164,6 +27,7 @@
     const interestRate = parseFloat(document.getElementById("interestRate").value) / 100;
     const loanTerm = parseFloat(document.getElementById("loanTerm").value);
     const selectedCity = document.getElementById("city").value;
+    const homePrice = parseFloat(document.getElementById("homePrice").value);
 
     if (!loanAmount || !interestRate || !loanTerm) {
       alert("Please fill out home price, down payment, interest rate, and loan term.");
@@ -176,7 +40,6 @@
 
     let taxMonthly = 0;
     if (selectedCity && taxRates[selectedCity]) {
-      const homePrice = parseFloat(document.getElementById("homePrice").value);
       const annualTax = homePrice * (taxRates[selectedCity] / 100);
       taxMonthly = annualTax / 12;
     }
@@ -184,8 +47,53 @@
     const totalMonthly = baseMonthly + taxMonthly;
 
     document.getElementById("resultText").innerText = `Monthly Payment: $${totalMonthly.toFixed(2)} ${taxMonthly > 0 ? '(incl. est. property tax)' : ''}`;
+
+    // Generate amortization table for 72 months
+    generateAmortizationTable(loanAmount, monthlyInterest, baseMonthly, taxMonthly);
+  }
+
+  function generateAmortizationTable(principal, monthlyRate, monthlyPayment, taxMonthly) {
+    const tableContainerId = "amortizationTable";
+    let table = document.getElementById(tableContainerId);
+
+    if (!table) {
+      table = document.createElement("table");
+      table.id = tableContainerId;
+      table.style.marginTop = "30px";
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+      table.innerHTML = `
+        <thead>
+          <tr style="background-color:#00aaff; color:white;">
+            <th style="padding:10px; border:1px solid #ddd;">Month</th>
+            <th style="padding:10px; border:1px solid #ddd;">Principal</th>
+            <th style="padding:10px; border:1px solid #ddd;">Interest</th>
+            <th style="padding:10px; border:1px solid #ddd;">Property Tax</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+      document.querySelector(".container").appendChild(table);
+    }
+
+    const tbody = table.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    let balance = principal;
+
+    for (let month = 1; month <= 72; month++) {
+      const interest = balance * monthlyRate;
+      const principalPaid = monthlyPayment - interest;
+      balance -= principalPaid;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${month}</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:right;">$${principalPaid.toFixed(2)}</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:right;">$${interest.toFixed(2)}</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:right;">$${taxMonthly.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    }
   }
 </script>
-
-</body>
-</html>
