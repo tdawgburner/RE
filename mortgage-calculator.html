@@ -119,6 +119,18 @@
 
     <div id="results"></div>
 
+    <label for="yearSelect">Select Year for Pie Chart:</label>
+    <select id="yearSelect" onchange="updatePieChart()">
+      <option value="1">Year 1</option>
+      <option value="2">Year 2</option>
+      <option value="3">Year 3</option>
+      <option value="4">Year 4</option>
+      <option value="5">Year 5</option>
+      <option value="10">Year 10</option>
+      <option value="15">Year 15</option>
+      <option value="20">Year 20</option>
+    </select>
+
     <a class="home-link" href="index.html">← Back to Homepage</a>
   </div>
 
@@ -137,6 +149,9 @@
       seattle: 0.0093,
       sf: 0.0117
     };
+
+    let allPrincipalPayments = [];
+    let allInterestPayments = [];
 
     function calculate() {
       const homePrice = parseFloat(document.getElementById('homePrice').value);
@@ -162,34 +177,33 @@
       let balance = loanAmount;
       let totalPrincipal = 0;
       let totalInterest = 0;
-      let principalPaid = 0;
-      let interestPaid = 0;
-      let taxPaid = 0;
 
-      for (let i = 1; i <= 72; i++) {
-        const interest = balance * monthlyRate;
-        const principal = monthlyPayment - interest;
-        balance -= principal;
+      allPrincipalPayments = [];
+      allInterestPayments = [];
 
-        totalPrincipal += principal;
-        totalInterest += interest;
+      for (let year = 1; year <= loanTerm; year++) {
+        let yearlyPrincipal = 0;
+        let yearlyInterest = 0;
 
-        tableRows += `
-          <tr>
-            <td>${i}</td>
-            <td>$${principal.toFixed(2)}</td>
-            <td>$${interest.toFixed(2)}</td>
-            <td>$${monthlyTax.toFixed(2)}</td>
-          </tr>
-        `;
+        for (let i = 1 + (year - 1) * 12; i <= year * 12; i++) {
+          const interest = balance * monthlyRate;
+          const principal = monthlyPayment - interest;
+          balance -= principal;
+
+          yearlyPrincipal += principal;
+          yearlyInterest += interest;
+        }
+
+        allPrincipalPayments.push(yearlyPrincipal);
+        allInterestPayments.push(yearlyInterest);
       }
 
       const chartData = {
-        labels: ['Principal', 'Interest', 'Property Tax'],
+        labels: ['Principal', 'Interest'],
         datasets: [{
-          data: [totalPrincipal, totalInterest, monthlyTax * 72],
-          backgroundColor: ['#00bfff', '#ff6347', '#32cd32'],
-          hoverBackgroundColor: ['#0099cc', '#ff4500', '#228b22']
+          data: [allPrincipalPayments[document.getElementById('yearSelect').value - 1], allInterestPayments[document.getElementById('yearSelect').value - 1]],
+          backgroundColor: ['#00bfff', '#ff6347'],
+          hoverBackgroundColor: ['#0099cc', '#ff4500']
         }]
       };
 
@@ -219,25 +233,51 @@
         <table>
           <thead>
             <tr>
-              <th>Month</th>
-              <th>Principal</th>
-              <th>Interest</th>
-              <th>Property Tax</th>
+              <th>Year</th>
+              <th>Principal Payment</th>
+              <th>Interest Payment</th>
+              <th>Property Tax Payment</th>
             </tr>
           </thead>
           <tbody>
             ${tableRows}
           </tbody>
-          <tfoot>
-            <tr>
-              <th>Total (72 months)</th>
-              <th>$${totalPrincipal.toFixed(2)}</th>
-              <th>$${totalInterest.toFixed(2)}</th>
-              <th>$${(monthlyTax * 72).toFixed(2)}</th>
-            </tr>
-          </tfoot>
         </table>
       `;
+    }
+
+    function updatePieChart() {
+      const selectedYear = document.getElementById('yearSelect').value - 1;
+
+      const chartData = {
+        labels: ['Principal', 'Interest'],
+        datasets: [{
+          data: [allPrincipalPayments[selectedYear], allInterestPayments[selectedYear]],
+          backgroundColor: ['#00bfff', '#ff6347'],
+          hoverBackgroundColor: ['#0099cc', '#ff4500']
+        }]
+      };
+
+      const ctx = document.getElementById('paymentChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: chartData,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return `${tooltipItem.label}: $${tooltipItem.raw.toFixed(2)}`;
+                }
+              }
+            }
+          }
+        }
+      });
     }
   </script>
 </body>
