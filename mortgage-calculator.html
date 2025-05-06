@@ -87,7 +87,7 @@
       <button onclick="setDownPayment(0.15)">15% Down</button>
       <button onclick="setDownPayment(0.20)">20% Down</button>
     </div>
-    <p id="downPaymentAmount">Down Payment: $0</p> <!-- Display down payment amount -->
+    <p id="downPaymentAmount">Down Payment: $0</p>
 
     <label>Loan Term (years):</label>
     <input type="number" id="loanTerm" value="30" />
@@ -121,9 +121,8 @@
       miami: 0.0098
     };
 
-    let downPaymentPercentage = 0.20; // Default 20%
+    let downPaymentPercentage = 0.20;
 
-    // Function to set down payment percentage from button clicks
     function setDownPayment(percentage) {
       downPaymentPercentage = percentage;
       const homePrice = parseFloat(document.getElementById('homePrice').value);
@@ -133,7 +132,6 @@
       }
     }
 
-    // Calculate the mortgage and yearly details
     function calculate() {
       const homePrice = parseFloat(document.getElementById('homePrice').value);
       const downPayment = homePrice * downPaymentPercentage;
@@ -154,12 +152,12 @@
       const monthlyTax = (homePrice * propertyTaxRate) / 12;
       const totalMonthly = monthlyPayment + monthlyTax;
 
-      // Yearly totals
       let tableRows = "";
       let balance = loanAmount;
       let totalPrincipal = 0;
       let totalInterest = 0;
 
+      // Calculate amortization per year
       for (let i = 1; i <= loanTerm; i++) {
         let annualPrincipal = 0;
         let annualInterest = 0;
