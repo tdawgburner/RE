@@ -2,187 +2,249 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mortgage Calculator</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e2f;
       color: #ffffff;
       margin: 0;
       padding: 0;
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
+    header {
+      background-color: #121212;
       padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      color: #00bfff;
+      margin: 0;
+    }
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
     }
     input, select {
       width: 100%;
       padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
+      margin-top: 5px;
+      border-radius: 6px;
       border: none;
     }
     button {
-      background-color: #1e90ff;
+      margin-top: 20px;
+      background-color: #00bfff;
       color: white;
-      padding: 10px 20px;
       border: none;
-      border-radius: 5px;
+      padding: 12px 20px;
       cursor: pointer;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+    button:hover {
+      background-color: #0099cc;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 30px;
     }
     th, td {
       padding: 10px;
-      border: 1px solid #444;
+      border-bottom: 1px solid #555;
       text-align: center;
     }
-    canvas {
+    th {
+      background-color: #2d2d44;
+    }
+    a.home-link {
+      color: #00bfff;
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+    }
+    a.home-link:hover {
+      text-decoration: underline;
+    }
+    #chartContainer {
       margin-top: 40px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>Mortgage Calculator</h1>
+  </header>
+
+  <div class="container">
     <label>Home Price ($):</label>
-    <input type="number" id="homePrice" value="500000" />
+    <input type="number" id="homePrice" />
 
     <label>Down Payment ($):</label>
-    <input type="number" id="downPayment" value="100000" />
+    <input type="number" id="downPayment" />
 
     <label>Loan Term (years):</label>
-    <select id="loanTerm">
-      <option value="15">15 Years</option>
-      <option value="30" selected>30 Years</option>
-    </select>
+    <input type="number" id="loanTerm" value="30" />
 
     <label>Interest Rate (%):</label>
-    <input type="number" id="interestRate" step="0.01" value="6.5" />
+    <input type="number" id="interestRate" step="0.01" />
 
-    <label>City (for property tax estimate):</label>
+    <label>City (Optional - for property tax estimate):</label>
     <select id="city">
-      <option value="">-- Optional --</option>
+      <option value="">-- Select City --</option>
       <option value="dc">Washington, DC (0.85%)</option>
       <option value="nyc">New York, NY (1.68%)</option>
       <option value="la">Los Angeles, CA (0.73%)</option>
       <option value="houston">Houston, TX (2.01%)</option>
       <option value="miami">Miami, FL (0.98%)</option>
-      <option value="chicago">Chicago, IL (2.03%)</option>
+      <option value="chicago">Chicago, IL (2.13%)</option>
       <option value="seattle">Seattle, WA (0.93%)</option>
-      <option value="sf">San Francisco, CA (1.17%)</option>
+      <option value="atlanta">Atlanta, GA (0.96%)</option>
+      <option value="boston">Boston, MA (1.12%)</option>
     </select>
 
-    <button onclick="calculateMortgage()">Calculate</button>
+    <button onclick="calculate()">Calculate</button>
 
-    <div id="result"></div>
+    <div id="results"></div>
+    <div id="chartContainer">
+      <canvas id="yearlyChart"></canvas>
+    </div>
 
-    <canvas id="chart" width="800" height="400"></canvas>
+    <a class="home-link" href="index.html">← Back to Homepage</a>
   </div>
 
   <script>
-    const cityRates = {
+    const cityTaxes = {
       dc: 0.0085,
       nyc: 0.0168,
       la: 0.0073,
       houston: 0.0201,
       miami: 0.0098,
-      chicago: 0.0203,
+      chicago: 0.0213,
       seattle: 0.0093,
-      sf: 0.0117
+      atlanta: 0.0096,
+      boston: 0.0112
     };
 
-    function calculateMortgage() {
+    let chartInstance = null;
+
+    function calculate() {
       const homePrice = parseFloat(document.getElementById('homePrice').value);
       const downPayment = parseFloat(document.getElementById('downPayment').value);
-      const loanAmount = homePrice - downPayment;
       const loanTerm = parseInt(document.getElementById('loanTerm').value);
       const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
-      const selectedCity = document.getElementById('city').value;
-      const taxRate = cityRates[selectedCity] || 0;
+      const city = document.getElementById('city').value;
+      const propertyTaxRate = cityTaxes[city] || 0;
 
-      const monthlyInterest = interestRate / 12;
-      const totalMonths = loanTerm * 12;
-      const monthlyPayment = loanAmount * monthlyInterest / (1 - Math.pow(1 + monthlyInterest, -totalMonths));
-      const monthlyTax = (homePrice * taxRate) / 12;
-
-      let balance = loanAmount;
-      let annualData = [];
-
-      for (let year = 1; year <= loanTerm; year++) {
-        let annualPrincipal = 0;
-        let annualInterest = 0;
-        let annualTax = 0;
-
-        for (let month = 1; month <= 12; month++) {
-          const interest = balance * monthlyInterest;
-          const principal = monthlyPayment - interest;
-          annualPrincipal += principal;
-          annualInterest += interest;
-          annualTax += monthlyTax;
-          balance -= principal;
-        }
-
-        annualData.push({ year, principal: annualPrincipal, interest: annualInterest, tax: annualTax });
+      if (isNaN(homePrice) || isNaN(downPayment) || isNaN(loanTerm) || isNaN(interestRate)) {
+        alert("Please fill out all required fields.");
+        return;
       }
 
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = `
+      const loanAmount = homePrice - downPayment;
+      const months = loanTerm * 12;
+      const monthlyRate = interestRate / 12;
+      const monthlyPayment = loanAmount * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
+      const monthlyTax = (homePrice * propertyTaxRate) / 12;
+
+      let balance = loanAmount;
+      let yearlyPrincipal = [];
+      let yearlyInterest = [];
+      let yearlyTax = [];
+      let labels = [];
+
+      for (let year = 1; year <= loanTerm; year++) {
+        let principalSum = 0;
+        let interestSum = 0;
+        for (let month = 1; month <= 12; month++) {
+          const interest = balance * monthlyRate;
+          const principal = monthlyPayment - interest;
+          balance -= principal;
+
+          principalSum += principal;
+          interestSum += interest;
+
+          if (balance < 0) break;
+        }
+
+        yearlyPrincipal.push(principalSum);
+        yearlyInterest.push(interestSum);
+        yearlyTax.push(monthlyTax * 12);
+        labels.push(`Year ${year}`);
+      }
+
+      // Table rendering
+      let tableRows = '';
+      for (let i = 0; i < labels.length; i++) {
+        tableRows += `
+          <tr>
+            <td>${labels[i]}</td>
+            <td>$${yearlyPrincipal[i].toFixed(2)}</td>
+            <td>$${yearlyInterest[i].toFixed(2)}</td>
+            <td>$${yearlyTax[i].toFixed(2)}</td>
+          </tr>
+        `;
+      }
+
+      document.getElementById('results').innerHTML = `
+        <h3>Monthly Payment: $${(monthlyPayment + monthlyTax).toFixed(2)}</h3>
         <table>
-          <tr><th>Year</th><th>Principal Paid</th><th>Interest Paid</th><th>Property Tax</th></tr>
-          ${annualData.map(row => `<tr><td>${row.year}</td><td>$${row.principal.toFixed(2)}</td><td>$${row.interest.toFixed(2)}</td><td>$${row.tax.toFixed(2)}</td></tr>`).join('')}
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Total Principal</th>
+              <th>Total Interest</th>
+              <th>Property Tax</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
         </table>
       `;
 
-      const ctx = document.getElementById('chart').getContext('2d');
-      new Chart(ctx, {
+      // Chart update
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      const ctx = document.getElementById('yearlyChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: annualData.map(d => `Year ${d.year}`),
+          labels: labels,
           datasets: [
             {
               label: 'Principal',
-              data: annualData.map(d => d.principal),
-              backgroundColor: '#00bfff'
+              data: yearlyPrincipal,
+              backgroundColor: '#00cc99'
             },
             {
               label: 'Interest',
-              data: annualData.map(d => d.interest),
-              backgroundColor: '#ff6347'
+              data: yearlyInterest,
+              backgroundColor: '#ff6666'
             },
             {
               label: 'Property Tax',
-              data: annualData.map(d => d.tax),
-              backgroundColor: '#32cd32'
+              data: yearlyTax,
+              backgroundColor: '#3399ff'
             }
           ]
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
-                }
-              }
-            }
-          },
           scales: {
             y: {
               beginAtZero: true,
-              ticks: {
-                callback: function(value) {
-                  return `$${value}`;
-                }
-              }
+              title: { display: true, text: 'Amount ($)' }
+            },
+            x: {
+              title: { display: true, text: 'Year' }
             }
           }
         }
