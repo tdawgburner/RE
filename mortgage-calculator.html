@@ -87,6 +87,7 @@
       <button onclick="setDownPayment(0.15)">15% Down</button>
       <button onclick="setDownPayment(0.20)">20% Down</button>
     </div>
+    <p id="downPaymentAmount">Down Payment: $0</p> <!-- Display down payment amount -->
 
     <label>Loan Term (years):</label>
     <input type="number" id="loanTerm" value="30" />
@@ -125,7 +126,11 @@
     // Function to set down payment percentage from button clicks
     function setDownPayment(percentage) {
       downPaymentPercentage = percentage;
-      document.getElementById('homePrice').value = "";
+      const homePrice = parseFloat(document.getElementById('homePrice').value);
+      if (!isNaN(homePrice)) {
+        const downPayment = homePrice * downPaymentPercentage;
+        document.getElementById('downPaymentAmount').innerText = `Down Payment: $${downPayment.toFixed(2)}`;
+      }
     }
 
     // Calculate the mortgage and yearly details
