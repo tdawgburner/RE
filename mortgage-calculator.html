@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mortgage Calculator</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,45 +23,28 @@
     }
     .container {
       padding: 20px;
-      max-width: 900px;
+      max-width: 800px;
       margin: auto;
     }
     label {
       display: block;
       margin-top: 15px;
     }
-    input, select, button.down-payment-btn {
+    input, select, button {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
       border-radius: 6px;
       border: none;
     }
-    .down-payment-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    button.down-payment-btn {
-      flex: 1;
-      background-color: #2d2d44;
-      color: white;
-      cursor: pointer;
-    }
-    button.down-payment-btn:hover {
-      background-color: #00bfff;
-    }
-    button.calculate-btn {
+    button {
       margin-top: 20px;
       background-color: #00bfff;
       color: white;
-      border: none;
-      padding: 12px 20px;
       cursor: pointer;
-      border-radius: 6px;
       font-size: 1em;
     }
-    button.calculate-btn:hover {
+    button:hover {
       background-color: #0099cc;
     }
     table {
@@ -87,27 +69,23 @@
     a.home-link:hover {
       text-decoration: underline;
     }
-    canvas {
-      margin-top: 40px;
-    }
   </style>
 </head>
 <body>
   <header>
     <h1>Mortgage Calculator</h1>
   </header>
+
   <div class="container">
     <label>Home Price ($):</label>
     <input type="number" id="homePrice" />
 
     <label>Down Payment ($):</label>
-    <input type="number" id="downPayment" />
-
-    <div class="down-payment-buttons">
-      <button class="down-payment-btn" onclick="setDownPayment(5)">5%</button>
-      <button class="down-payment-btn" onclick="setDownPayment(10)">10%</button>
-      <button class="down-payment-btn" onclick="setDownPayment(15)">15%</button>
-      <button class="down-payment-btn" onclick="setDownPayment(20)">20%</button>
+    <div>
+      <button onclick="setDownPayment(0.05)">5% Down</button>
+      <button onclick="setDownPayment(0.10)">10% Down</button>
+      <button onclick="setDownPayment(0.15)">15% Down</button>
+      <button onclick="setDownPayment(0.20)">20% Down</button>
     </div>
 
     <label>Loan Term (years):</label>
@@ -126,9 +104,10 @@
       <option value="miami">Miami, FL (0.98%)</option>
     </select>
 
-    <button class="calculate-btn" onclick="calculate()">Calculate</button>
+    <button onclick="calculate()">Calculate</button>
+
     <div id="results"></div>
-    <canvas id="yearlyChart" width="800" height="400"></canvas>
+
     <a class="home-link" href="index.html">← Back to Homepage</a>
   </div>
 
@@ -141,116 +120,91 @@
       miami: 0.0098
     };
 
-    function setDownPayment(percent) {
-      const homePrice = parseFloat(document.getElementById('homePrice').value);
-      if (!isNaN(homePrice)) {
-        document.getElementById('downPayment').value = (homePrice * (percent / 100)).toFixed(2);
-      }
+    let downPaymentPercentage = 0.20; // Default 20%
+
+    // Function to set down payment percentage from button clicks
+    function setDownPayment(percentage) {
+      downPaymentPercentage = percentage;
+      document.getElementById('homePrice').value = "";
     }
 
+    // Calculate the mortgage and yearly details
     function calculate() {
       const homePrice = parseFloat(document.getElementById('homePrice').value);
-      const downPayment = parseFloat(document.getElementById('downPayment').value);
+      const downPayment = homePrice * downPaymentPercentage;
+      const loanAmount = homePrice - downPayment;
       const loanTerm = parseInt(document.getElementById('loanTerm').value);
       const interestRate = parseFloat(document.getElementById('interestRate').value) / 100;
       const city = document.getElementById('city').value;
       const propertyTaxRate = cityTaxes[city] || 0;
 
-      if (isNaN(homePrice) || isNaN(downPayment) || isNaN(loanTerm) || isNaN(interestRate)) {
+      if (isNaN(homePrice) || isNaN(downPayment) || isNaN(loanAmount) || isNaN(loanTerm) || isNaN(interestRate)) {
         alert("Please fill out all required fields.");
         return;
       }
 
-      const loanAmount = homePrice - downPayment;
       const months = loanTerm * 12;
       const monthlyRate = interestRate / 12;
       const monthlyPayment = loanAmount * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
       const monthlyTax = (homePrice * propertyTaxRate) / 12;
+      const totalMonthly = monthlyPayment + monthlyTax;
 
-      let balance = loanAmount;
+      // Yearly totals
       let tableRows = "";
-      let yearlyPrincipal = 0;
-      let yearlyInterest = 0;
-      let year = 1;
-      let chartPrincipal = [];
-      let chartInterest = [];
-      let chartYears = [];
+      let balance = loanAmount;
+      let totalPrincipal = 0;
+      let totalInterest = 0;
 
-      for (let i = 1; i <= months; i++) {
-        const interest = balance * monthlyRate;
-        const principal = monthlyPayment - interest;
-        balance -= principal;
+      for (let i = 1; i <= loanTerm; i++) {
+        let annualPrincipal = 0;
+        let annualInterest = 0;
+        let annualTax = 0;
 
-        yearlyPrincipal += principal;
-        yearlyInterest += interest;
+        for (let j = 1; j <= 12; j++) {
+          const interest = balance * monthlyRate;
+          const principal = monthlyPayment - interest;
+          balance -= principal;
 
-        if (i % 12 === 0 || i === months) {
-          chartYears.push(year);
-          chartPrincipal.push(yearlyPrincipal);
-          chartInterest.push(yearlyInterest);
-          year++;
-
-          tableRows += `
-            <tr>
-              <td>${year - 1}</td>
-              <td>$${yearlyPrincipal.toFixed(2)}</td>
-              <td>$${yearlyInterest.toFixed(2)}</td>
-              <td>$${(monthlyTax * 12).toFixed(2)}</td>
-            </tr>
-          `;
-
-          yearlyPrincipal = 0;
-          yearlyInterest = 0;
+          annualPrincipal += principal;
+          annualInterest += interest;
+          annualTax += monthlyTax;
         }
+
+        tableRows += `
+          <tr>
+            <td>${i}</td>
+            <td>$${annualPrincipal.toFixed(2)}</td>
+            <td>$${annualInterest.toFixed(2)}</td>
+            <td>$${annualTax.toFixed(2)}</td>
+          </tr>
+        `;
       }
 
+      // Update the results with the table and other details
       document.getElementById('results').innerHTML = `
-        <h3>Monthly Payment (incl. est. taxes): $${(monthlyPayment + monthlyTax).toFixed(2)}</h3>
+        <h3>Monthly Payment: $${totalMonthly.toFixed(2)}</h3>
         <table>
           <thead>
             <tr>
               <th>Year</th>
-              <th>Total Principal</th>
-              <th>Total Interest</th>
+              <th>Principal</th>
+              <th>Interest</th>
               <th>Property Tax</th>
             </tr>
           </thead>
           <tbody>
             ${tableRows}
           </tbody>
+          <tfoot>
+            <tr>
+              <th>Total (${loanTerm} years)</th>
+              <th>$${totalPrincipal.toFixed(2)}</th>
+              <th>$${totalInterest.toFixed(2)}</th>
+              <th>$${(monthlyTax * 12 * loanTerm).toFixed(2)}</th>
+            </tr>
+          </tfoot>
         </table>
       `;
-
-      const ctx = document.getElementById('yearlyChart').getContext('2d');
-      if (window.chartInstance) {
-        window.chartInstance.destroy();
-      }
-      window.chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: chartYears,
-          datasets: [
-            {
-              label: 'Principal',
-              data: chartPrincipal,
-              backgroundColor: 'rgba(0, 191, 255, 0.7)'
-            },
-            {
-              label: 'Interest',
-              data: chartInterest,
-              backgroundColor: 'rgba(255, 99, 132, 0.7)'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
     }
   </script>
 </body>
