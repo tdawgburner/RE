@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mortgage Calculator</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for visualization -->
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -73,15 +72,6 @@
     a.home-link:hover {
       text-decoration: underline;
     }
-    #pieChartContainer {
-      width: 100%;
-      margin-top: 20px;
-      text-align: center;
-    }
-    canvas {
-      max-width: 400px;
-      margin: auto;
-    }
   </style>
 </head>
 <body>
@@ -110,32 +100,13 @@
       <option value="la">Los Angeles, CA (0.73%)</option>
       <option value="houston">Houston, TX (2.01%)</option>
       <option value="miami">Miami, FL (0.98%)</option>
-      <option value="chicago">Chicago, IL (2.03%)</option>
-      <option value="seattle">Seattle, WA (0.93%)</option>
-      <option value="sf">San Francisco, CA (1.17%)</option>
     </select>
 
     <button onclick="calculate()">Calculate</button>
 
     <div id="results"></div>
 
-    <label for="yearSelect">Select Year for Pie Chart:</label>
-    <select id="yearSelect" onchange="updatePieChart()">
-      <option value="1">Year 1</option>
-      <option value="2">Year 2</option>
-      <option value="3">Year 3</option>
-      <option value="4">Year 4</option>
-      <option value="5">Year 5</option>
-      <option value="10">Year 10</option>
-      <option value="15">Year 15</option>
-      <option value="20">Year 20</option>
-    </select>
-
     <a class="home-link" href="index.html">← Back to Homepage</a>
-  </div>
-
-  <div id="pieChartContainer">
-    <canvas id="paymentChart"></canvas>
   </div>
 
   <script>
@@ -144,14 +115,8 @@
       nyc: 0.0168,
       la: 0.0073,
       houston: 0.0201,
-      miami: 0.0098,
-      chicago: 0.0203,
-      seattle: 0.0093,
-      sf: 0.0117
+      miami: 0.0098
     };
-
-    let allPrincipalPayments = [];
-    let allInterestPayments = [];
 
     function calculate() {
       const homePrice = parseFloat(document.getElementById('homePrice').value);
@@ -178,106 +143,48 @@
       let totalPrincipal = 0;
       let totalInterest = 0;
 
-      allPrincipalPayments = [];
-      allInterestPayments = [];
+      for (let i = 1; i <= 72; i++) {
+        const interest = balance * monthlyRate;
+        const principal = monthlyPayment - interest;
+        balance -= principal;
 
-      for (let year = 1; year <= loanTerm; year++) {
-        let yearlyPrincipal = 0;
-        let yearlyInterest = 0;
+        totalPrincipal += principal;
+        totalInterest += interest;
 
-        for (let i = 1 + (year - 1) * 12; i <= year * 12; i++) {
-          const interest = balance * monthlyRate;
-          const principal = monthlyPayment - interest;
-          balance -= principal;
-
-          yearlyPrincipal += principal;
-          yearlyInterest += interest;
-        }
-
-        allPrincipalPayments.push(yearlyPrincipal);
-        allInterestPayments.push(yearlyInterest);
+        tableRows += 
+          <tr>
+            <td>${i}</td>
+            <td>$${principal.toFixed(2)}</td>
+            <td>$${interest.toFixed(2)}</td>
+            <td>$${monthlyTax.toFixed(2)}</td>
+          </tr>
+        ;
       }
 
-      const chartData = {
-        labels: ['Principal', 'Interest'],
-        datasets: [{
-          data: [allPrincipalPayments[document.getElementById('yearSelect').value - 1], allInterestPayments[document.getElementById('yearSelect').value - 1]],
-          backgroundColor: ['#00bfff', '#ff6347'],
-          hoverBackgroundColor: ['#0099cc', '#ff4500']
-        }]
-      };
-
-      const ctx = document.getElementById('paymentChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'pie',
-        data: chartData,
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            tooltip: {
-              callbacks: {
-                label: function(tooltipItem) {
-                  return `${tooltipItem.label}: $${tooltipItem.raw.toFixed(2)}`;
-                }
-              }
-            }
-          }
-        }
-      });
-
-      document.getElementById('results').innerHTML = `
+      document.getElementById('results').innerHTML = 
         <h3>Monthly Payment: $${totalMonthly.toFixed(2)}</h3>
         <table>
           <thead>
             <tr>
-              <th>Year</th>
-              <th>Principal Payment</th>
-              <th>Interest Payment</th>
-              <th>Property Tax Payment</th>
+              <th>Month</th>
+              <th>Principal</th>
+              <th>Interest</th>
+              <th>Property Tax</th>
             </tr>
           </thead>
           <tbody>
             ${tableRows}
           </tbody>
+          <tfoot>
+            <tr>
+              <th>Total (72 months)</th>
+              <th>$${totalPrincipal.toFixed(2)}</th>
+              <th>$${totalInterest.toFixed(2)}</th>
+              <th>$${(monthlyTax * 72).toFixed(2)}</th>
+            </tr>
+          </tfoot>
         </table>
-      `;
-    }
-
-    function updatePieChart() {
-      const selectedYear = document.getElementById('yearSelect').value - 1;
-
-      const chartData = {
-        labels: ['Principal', 'Interest'],
-        datasets: [{
-          data: [allPrincipalPayments[selectedYear], allInterestPayments[selectedYear]],
-          backgroundColor: ['#00bfff', '#ff6347'],
-          hoverBackgroundColor: ['#0099cc', '#ff4500']
-        }]
-      };
-
-      const ctx = document.getElementById('paymentChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'pie',
-        data: chartData,
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top',
-            },
-            tooltip: {
-              callbacks: {
-                label: function(tooltipItem) {
-                  return `${tooltipItem.label}: $${tooltipItem.raw.toFixed(2)}`;
-                }
-              }
-            }
-          }
-        }
-      });
+      ;
     }
   </script>
 </body>
